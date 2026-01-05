@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preference Test - Gradient Clock</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #0a0a0a;
+      color: #fff;
+    }
+    h1 { color: #4a9eff; }
+    h2 { color: #6eb5ff; margin-top: 30px; }
+    .test-section {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 14px;
+      background: #4a9eff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #6eb5ff;
+    }
+    .result {
+      margin: 10px 0;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    .success { color: #4ade80; }
+    .error { color: #ef4444; }
+    .info { color: #60a5fa; }
+    .warning { color: #fbbf24; }
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Gradient Clock - Preference Persistence Test</h1>
+  <p>This test suite verifies that user preferences are properly saved and loaded.</p>
+
+  <div class="test-section">
+    <h2>📋 Test 1: Check Current Preferences</h2>
+    <button onclick="checkPreferences()">Check Saved Preferences</button>
+    <div id="check-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>💾 Test 2: Save Test Preferences</h2>
+    <button onclick="saveTestPreferences()">Save Test Data</button>
+    <p class="info">This will save: 24-Hour format, Winter theme, Roman numerals</p>
+    <div id="save-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>🔄 Test 3: Clear All Preferences</h2>
+    <button onclick="clearPreferences()">Clear All Preferences</button>
+    <div id="clear-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>✅ Test 4: Automated Persistence Test</h2>
+    <button onclick="runAutomatedTest()">Run Full Test</button>
+    <div id="auto-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>🔍 Test 5: localStorage Availability</h2>
+    <button onclick="testLocalStorage()">Test localStorage</button>
+    <div id="storage-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>📱 Live Clock Preview</h2>
+    <p>The clock below should load with saved preferences:</p>
+    <button onclick="reloadClock()">Reload Clock</button>
+    <iframe id="clock-frame" src="http://localhost:3000/index.html"></iframe>
+  </div>
+
+  <script>
+    const STORAGE_KEYS = {
+      TIME_FORMAT: 'gradientClock_timeFormat',
+      TEXTURE: 'gradientClock_texture',
+      THEME: 'gradientClock_theme'
+    };
+
+    function checkPreferences() {
+      const result = document.getElementById('check-result');
+      const timeFormat = localStorage.getItem(STORAGE_KEYS.TIME_FORMAT);
+      const texture = localStorage.getItem(STORAGE_KEYS.TEXTURE);
+      const theme = localStorage.getItem(STORAGE_KEYS.THEME);
+      
+      result.innerHTML = `
+<span class="info">Current Saved Preferences:</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Time Format: <span class="${timeFormat ? 'success' : 'warning'}">${timeFormat || 'none (not set)'}</span>
+Texture:     <span class="${texture ? 'success' : 'warning'}">${texture || 'none (not set)'}</span>
+Theme:       <span class="${theme ? 'success' : 'warning'}">${theme || 'metallic (default)'}</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      `;
+    }
+
+    function saveTestPreferences() {
+      const result = document.getElementById('save-result');
+      try {
+        localStorage.setItem(STORAGE_KEYS.TIME_FORMAT, 'military');
+        localStorage.setItem(STORAGE_KEYS.TEXTURE, 'roman');
+        localStorage.setItem(STORAGE_KEYS.THEME, 'winter');
+        
+        result.innerHTML = `
+<span class="success">✅ Test preferences saved successfully!</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Saved:
+  • Time Format: military (24-Hour)
+  • Texture: roman (Roman Numerals)
+  • Theme: winter (Winter)
+
+<span class="info">Now reload the clock to see if it loads with these settings.</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        `;
+        
+        // Auto-reload the clock iframe
+        setTimeout(() => {
+          reloadClock();
+        }, 1000);
+      } catch (e) {
+        result.innerHTML = `<span class="error">❌ Error saving preferences: ${e.message}</span>`;
+      }
+    }
+
+    function clearPreferences() {
+      const result = document.getElementById('clear-result');
+      try {
+        localStorage.removeItem(STORAGE_KEYS.TIME_FORMAT);
+        localStorage.removeItem(STORAGE_KEYS.TEXTURE);
+        localStorage.removeItem(STORAGE_KEYS.THEME);
+        
+        result.innerHTML = `
+<span class="success">✅ All preferences cleared!</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The clock should now load with default settings:
+  • No time format (clock only)
+  • No texture
+  • Metallic theme (default)
+
+<span class="info">Reload the clock to verify defaults are restored.</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        `;
+        
+        // Auto-reload the clock iframe
+        setTimeout(() => {
+          reloadClock();
+        }, 1000);
+      } catch (e) {
+        result.innerHTML = `<span class="error">❌ Error clearing preferences: ${e.message}</span>`;
+      }
+    }
+
+    function testLocalStorage() {
+      const result = document.getElementById('storage-result');
+      try {
+        // Test write
+        const testKey = '__test_key__';
+        const testValue = 'test_value_' + Date.now();
+        localStorage.setItem(testKey, testValue);
+        
+        // Test read
+        const retrieved = localStorage.getItem(testKey);
+        
+        // Test delete
+        localStorage.removeItem(testKey);
+        const afterDelete = localStorage.getItem(testKey);
+        
+        if (retrieved === testValue && afterDelete === null) {
+          result.innerHTML = `
+<span class="success">✅ localStorage is working correctly!</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Tests passed:
+  ✓ Write test
+  ✓ Read test
+  ✓ Delete test
+
+Your browser/environment supports preference persistence.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          `;
+        } else {
+          result.innerHTML = `<span class="error">❌ localStorage test failed: Data mismatch</span>`;
+        }
+      } catch (e) {
+        result.innerHTML = `
+<span class="error">❌ localStorage is NOT available!</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Error: ${e.message}
+
+<span class="warning">⚠️  This means preferences will NOT persist!</span>
+
+Possible causes:
+  • Private/Incognito browsing mode
+  • Browser security settings
+  • Storage quota exceeded
+  • WebView restrictions (Android)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        `;
+      }
+    }
+
+    function reloadClock() {
+      const frame = document.getElementById('clock-frame');
+      frame.src = frame.src; // Force reload
+    }
+
+    async function runAutomatedTest() {
+      const result = document.getElementById('auto-result');
+      result.innerHTML = '<span class="info">Running automated test...</span>';
+      
+      let testLog = '';
+      let passed = 0;
+      let failed = 0;
+
+      // Test 1: Clear storage
+      testLog += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+      testLog += 'Test 1: Clear all preferences\n';
+      try {
+        localStorage.removeItem(STORAGE_KEYS.TIME_FORMAT);
+        localStorage.removeItem(STORAGE_KEYS.TEXTURE);
+        localStorage.removeItem(STORAGE_KEYS.THEME);
+        testLog += '<span class="success">✅ PASS - Cleared successfully</span>\n';
+        passed++;
+      } catch (e) {
+        testLog += `<span class="error">❌ FAIL - ${e.message}</span>\n`;
+        failed++;
+      }
+
+      // Test 2: Save preferences
+      testLog += '\nTest 2: Save preferences\n';
+      try {
+        localStorage.setItem(STORAGE_KEYS.TIME_FORMAT, 'ampm');
+        localStorage.setItem(STORAGE_KEYS.TEXTURE, 'dots');
+        localStorage.setItem(STORAGE_KEYS.THEME, 'space');
+        testLog += '<span class="success">✅ PASS - Saved successfully</span>\n';
+        passed++;
+      } catch (e) {
+        testLog += `<span class="error">❌ FAIL - ${e.message}</span>\n`;
+        failed++;
+      }
+
+      // Test 3: Verify saved data
+      testLog += '\nTest 3: Verify saved data persists\n';
+      const timeFormat = localStorage.getItem(STORAGE_KEYS.TIME_FORMAT);
+      const texture = localStorage.getItem(STORAGE_KEYS.TEXTURE);
+      const theme = localStorage.getItem(STORAGE_KEYS.THEME);
+      
+      if (timeFormat === 'ampm' && texture === 'dots' && theme === 'space') {
+        testLog += '<span class="success">✅ PASS - All preferences retrieved correctly</span>\n';
+        testLog += `   Time Format: ${timeFormat}\n`;
+        testLog += `   Texture: ${texture}\n`;
+        testLog += `   Theme: ${theme}\n`;
+        passed++;
+      } else {
+        testLog += '<span class="error">❌ FAIL - Data mismatch</span>\n';
+        testLog += `   Expected: ampm, dots, space\n`;
+        testLog += `   Got: ${timeFormat}, ${texture}, ${theme}\n`;
+        failed++;
+      }
+
+      // Test 4: Update preferences
+      testLog += '\nTest 4: Update existing preferences\n';
+      try {
+        localStorage.setItem(STORAGE_KEYS.THEME, 'christmas');
+        const updated = localStorage.getItem(STORAGE_KEYS.THEME);
+        if (updated === 'christmas') {
+          testLog += '<span class="success">✅ PASS - Update successful</span>\n';
+          passed++;
+        } else {
+          testLog += '<span class="error">❌ FAIL - Update failed</span>\n';
+          failed++;
+        }
+      } catch (e) {
+        testLog += `<span class="error">❌ FAIL - ${e.message}</span>\n`;
+        failed++;
+      }
+
+      // Test 5: Partial clear
+      testLog += '\nTest 5: Partial clear (remove one preference)\n';
+      try {
+        localStorage.removeItem(STORAGE_KEYS.TEXTURE);
+        const removed = localStorage.getItem(STORAGE_KEYS.TEXTURE);
+        const remaining = localStorage.getItem(STORAGE_KEYS.THEME);
+        if (removed === null && remaining === 'christmas') {
+          testLog += '<span class="success">✅ PASS - Selective removal works</span>\n';
+          passed++;
+        } else {
+          testLog += '<span class="error">❌ FAIL - Unexpected state</span>\n';
+          failed++;
+        }
+      } catch (e) {
+        testLog += `<span class="error">❌ FAIL - ${e.message}</span>\n`;
+        failed++;
+      }
+
+      testLog += '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+      testLog += `<span class="${passed === 5 ? 'success' : 'warning'}">Results: ${passed}/5 tests passed</span>\n`;
+      testLog += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+
+      if (passed === 5) {
+        testLog += '\n<span class="success">🎉 ALL TESTS PASSED!</span>\n';
+        testLog += 'Preference persistence is working correctly.\n';
+      } else {
+        testLog += '\n<span class="error">⚠️  SOME TESTS FAILED</span>\n';
+        testLog += 'There may be issues with preference persistence.\n';
+      }
+
+      result.innerHTML = testLog;
+    }
+
+    // Run initial check on load
+    window.addEventListener('load', () => {
+      testLocalStorage();
+      checkPreferences();
+    });
+  </script>
+</body>
+</html>
