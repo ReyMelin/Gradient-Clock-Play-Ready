@@ -218,6 +218,15 @@
     let lastMinutePaint = 0;
     let lastHourPaint = 0;
 
+    // Time synchronization variables
+    let clockOffset = 0; // Offset to correct for drift
+    let lastSyncTime = 0;
+    const SYNC_INTERVAL = 60000; // Resync every minute
+
+    // Performance monitoring
+    let frameCount = 0;
+    let lastFpsTime = performance.now();
+
     // ====== Themes ======
     const themes = {
       metallic: {
@@ -279,6 +288,68 @@
     const textureSelect = document.getElementById('textureSelect');
     const themeSelect = document.getElementById('themeSelect');
 
+    // ====== LocalStorage Helpers ======
+    const STORAGE_KEYS = {
+      TIME_FORMAT: 'gradientClock_timeFormat',
+      TEXTURE: 'gradientClock_texture',
+      THEME: 'gradientClock_theme'
+    };
+
+    function savePreferences() {
+      try {
+        localStorage.setItem(STORAGE_KEYS.TIME_FORMAT, timeFormat || 'none');
+        localStorage.setItem(STORAGE_KEYS.TEXTURE, textureSelect.value);
+        localStorage.setItem(STORAGE_KEYS.THEME, currentTheme);
+      } catch (e) {
+        console.warn('Unable to save preferences:', e);
+      }
+    }
+
+    function loadPreferences() {
+      try {
+        // Load time format
+        const savedTimeFormat = localStorage.getItem(STORAGE_KEYS.TIME_FORMAT);
+        if (savedTimeFormat && savedTimeFormat !== 'none') {
+          timeFormat = savedTimeFormat;
+          if (timeFormat === 'military') {
+            militaryBtn.classList.add('active');
+          } else if (timeFormat === 'ampm') {
+            ampmBtn.classList.add('active');
+          }
+        }
+
+        // Load texture
+        const savedTexture = localStorage.getItem(STORAGE_KEYS.TEXTURE);
+        if (savedTexture) {
+          textureSelect.value = savedTexture;
+          renderTexture(savedTexture);
+        }
+
+        // Load theme
+        const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+        if (savedTheme && themes[savedTheme]) {
+          currentTheme = savedTheme;
+          themeSelect.value = savedTheme;
+        }
+      } catch (e) {
+        console.warn('Unable to load preferences:', e);
+      }
+    }
+
+    // ====== Time Synchronization ======
+    function syncClock() {
+      const now = Date.now();
+      if (now - lastSyncTime > SYNC_INTERVAL) {
+        // Resync with system time to prevent drift
+        clockOffset = 0;
+        lastSyncTime = now;
+      }
+    }
+
+    function getCurrentTime() {
+      return new Date(Date.now() + clockOffset);
+    }
+
     // ====== Helpers ======
     function generateGradient(angle, colorData) {
       const [hue, sat, ...lightness] = colorData;
@@ -333,7 +404,10 @@
 
     // ====== Main clock update ======
     function updateClock() {
-      const now = new Date();
+      // Sync with system time periodically
+      syncClock();
+
+      const now = getCurrentTime();
       const seconds = now.getSeconds();
       const minutes = now.getMinutes();
       const hours = now.getHours() % 12;
@@ -384,13 +458,57 @@
         hoursRing.style.background = generateGradient(hoursAngle, theme.hours);
         lastHourPaint = nowMs;
       }
+
+      // Performance monitoring (optional, can be removed in production)
+      frameCount++;
+      if (nowMs - lastFpsTime >= 1000) {
+        // console.log(`FPS: ${frameCount}`);
+        frameCount = 0;
+        lastFpsTime = nowMs;
+      }
     }
 
     // ====== Animation loop (WebView-friendly) ======
+    let animationFrameId = null;
+    let isVisible = true;
+
     function frame() {
-      updateClock();
-      requestAnimationFrame(frame);
+      if (isVisible) {
+        updateClock();
+      }
+      animationFrameId = requestAnimationFrame(frame);
     }
+
+    // Handle visibility changes (when app is backgrounded/foregrounded)
+    document.addEventListener('visibilitychange', () => {
+      isVisible = !document.hidden;
+      if (isVisible) {
+        // Force immediate resync when app comes back to foreground
+        clockOffset = 0;
+        lastSyncTime = 0;
+        lastSecond = -1;
+        lastMinutePaint = 0;
+        lastHourPaint = 0;
+        updateClock();
+      }
+    });
+
+    // Handle page focus/blur
+    window.addEventListener('focus', () => {
+      isVisible = true;
+      clockOffset = 0;
+      lastSyncTime = 0;
+      updateClock();
+    });
+
+    window.addEventListener('blur', () => {
+      // Continue updating in background for accuracy
+    });
+
+    // Load preferences on startup
+    loadPreferences();
+
+    // Start the clock
     requestAnimationFrame(frame);
 
     // ====== UI events ======
@@ -403,6 +521,7 @@
         militaryBtn.classList.add('active');
         ampmBtn.classList.remove('active');
       }
+      savePreferences();
       updateClock();
     });
 
@@ -415,11 +534,13 @@
         ampmBtn.classList.add('active');
         militaryBtn.classList.remove('active');
       }
+      savePreferences();
       updateClock();
     });
 
     textureSelect.addEventListener('change', () => {
       renderTexture(textureSelect.value);
+      savePreferences();
     });
 
     themeSelect.addEventListener('change', () => {
@@ -427,6 +548,7 @@
       // Force immediate repaint of all rings on theme switch
       lastMinutePaint = 0;
       lastHourPaint = 0;
+      savePreferences();
       updateClock();
     });
 
