@@ -1,2 +1,16 @@
-/build/*
-!/build/.npmkeep
+# Android build output
+android/build/
+android/app/build/
+android/.gradle/
+
+# Node
+node_modules/
+
+# IDE
+.idea/
+.vs/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
