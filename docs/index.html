@@ -303,44 +303,28 @@
         localStorage.removeItem(test);
         return true;
       } catch (e) {
-        console.error('❌ localStorage not available:', e);
         return false;
       }
     }
 
     function savePreferences() {
-      if (!isLocalStorageAvailable()) {
-        console.error('❌ localStorage not available - cannot save preferences');
-        return;
-      }
+      if (!isLocalStorageAvailable()) return;
       
       try {
         localStorage.setItem(STORAGE_KEYS.TIME_FORMAT, timeFormat || 'none');
         localStorage.setItem(STORAGE_KEYS.TEXTURE, textureSelect.value);
         localStorage.setItem(STORAGE_KEYS.THEME, currentTheme);
-        console.log('✅ Preferences saved:', {
-          timeFormat: timeFormat || 'none',
-          texture: textureSelect.value,
-          theme: currentTheme
-        });
       } catch (e) {
-        console.error('❌ Unable to save preferences:', e);
-        alert('Unable to save preferences. Please check app permissions.');
+        // Silent fail - preferences won't persist
       }
     }
 
     function loadPreferences() {
-      if (!isLocalStorageAvailable()) {
-        console.error('❌ localStorage not available - using defaults');
-        return;
-      }
+      if (!isLocalStorageAvailable()) return;
       
       try {
-        console.log('📂 Loading preferences...');
-        
         // Load time format
         const savedTimeFormat = localStorage.getItem(STORAGE_KEYS.TIME_FORMAT);
-        console.log('Loaded timeFormat:', savedTimeFormat);
         if (savedTimeFormat && savedTimeFormat !== 'none') {
           timeFormat = savedTimeFormat;
           if (timeFormat === 'military') {
@@ -352,7 +336,6 @@
 
         // Load texture
         const savedTexture = localStorage.getItem(STORAGE_KEYS.TEXTURE);
-        console.log('Loaded texture:', savedTexture);
         if (savedTexture) {
           textureSelect.value = savedTexture;
           renderTexture(savedTexture);
@@ -360,18 +343,14 @@
 
         // Load theme
         const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
-        console.log('Loaded theme:', savedTheme);
         if (savedTheme && themes[savedTheme]) {
           currentTheme = savedTheme;
           themeSelect.value = savedTheme;
-          // Force immediate repaint with loaded theme
           lastMinutePaint = 0;
           lastHourPaint = 0;
         }
-        
-        console.log('✅ Preferences loaded successfully');
       } catch (e) {
-        console.error('❌ Unable to load preferences:', e);
+        // Silent fail - use defaults
       }
     }
 

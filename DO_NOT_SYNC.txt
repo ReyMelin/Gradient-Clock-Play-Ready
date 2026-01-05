@@ -1,1 +1,0 @@
-PLAY STORE BUILD — DO NOT RUN npx cap sync
