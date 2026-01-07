@@ -112,14 +112,7 @@ public class MainActivity extends BridgeActivity {
             String databasePath = getApplicationContext().getDir("databases", MODE_PRIVATE).getPath();
             settings.setDatabasePath(databasePath);
             Log.d(TAG, "Database path set to: " + databasePath);
-            
-            // Enable App Cache for offline support
-            settings.setAppCacheEnabled(true);
-            String cachePath = getApplicationContext().getCacheDir().getAbsolutePath();
-            settings.setAppCachePath(cachePath);
-            settings.setAppCacheMaxSize(10 * 1024 * 1024); // 10MB
-            Log.d(TAG, "App cache path set to: " + cachePath);
-            
+
             // Enable console logging for debugging
             bridge.setWebChromeClient(new WebChromeClient() {
                 @Override

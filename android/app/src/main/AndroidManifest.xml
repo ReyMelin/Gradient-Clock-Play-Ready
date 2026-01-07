@@ -9,18 +9,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:hardwareAccelerated="true">
-        <receiver
-            android:name=".widget.GradientClockWidgetProvider"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/gradient_clock_widget_info" />
-        </receiver>
-
 
         <!-- Main Activity -->
         <activity
