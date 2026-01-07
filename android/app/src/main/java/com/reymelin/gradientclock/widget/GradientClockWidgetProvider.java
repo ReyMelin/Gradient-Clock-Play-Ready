@@ -43,7 +43,8 @@ public class GradientClockWidgetProvider extends AppWidgetProvider {
   private static void updateOne(Context context, AppWidgetManager mgr, int appWidgetId) {
     RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.gradient_clock_widget);
 
-    views.setImageViewBitmap(R.id.widget_bg, GradientRenderer.renderGradientBitmap());
+    // Use the clock snapshot if available, otherwise fallback to gradient
+    views.setImageViewBitmap(R.id.widget_bg, GradientRenderer.renderWidgetBitmap(context, 800, 800));
     views.setTextViewText(R.id.widget_time, TimeFormatter.now());
 
     Intent intent = new Intent(context, MainActivity.class);

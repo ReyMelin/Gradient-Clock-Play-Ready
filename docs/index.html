@@ -195,6 +195,7 @@
   </div>
 
   <div class="clock-container">
+    <canvas id="clockCanvas" style="position: absolute; display: none;"></canvas>
     <div class="ring seconds-ring"></div>
     <div class="ring minutes-ring"></div>
     <div class="ring hours-ring"></div>
@@ -282,6 +283,7 @@
     const hoursRing = document.querySelector('.hours-ring');
     const timeDisplay = document.querySelector('.time-display');
     const container = document.querySelector('.clock-container');
+    const clockCanvas = document.getElementById('clockCanvas');
 
     const militaryBtn = document.getElementById('militaryBtn');
     const ampmBtn = document.getElementById('ampmBtn');
@@ -420,6 +422,144 @@
       });
     }
 
+    // ====== Clock Snapshot for Widget ======
+    let lastSnapshotTime = 0;
+    const SNAPSHOT_INTERVAL = 60000; // Update snapshot every minute
+
+    async function captureClockSnapshot() {
+      try {
+        const size = 800; // High resolution for widget
+        clockCanvas.width = size;
+        clockCanvas.height = size;
+        
+        const ctx = clockCanvas.getContext('2d');
+        ctx.clearRect(0, 0, size, size);
+        
+        // Draw background
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, size, size);
+        
+        const center = size / 2;
+        const now = getCurrentTime();
+        const seconds = now.getSeconds();
+        const minutes = now.getMinutes();
+        const hours = now.getHours() % 12;
+        const milliseconds = now.getMilliseconds();
+        
+        // Calculate angles
+        const secondsAngle = ((seconds + milliseconds / 1000) / 60) * 360;
+        const minutesAngle = ((minutes + seconds / 60) / 60) * 360;
+        const hoursAngle = ((hours + minutes / 60 + seconds / 3600) / 12) * 360;
+        
+        const theme = themes[currentTheme];
+        
+        // Helper to draw a conic gradient ring
+        function drawConicRing(angle, colorData, outerRadius, innerRadius) {
+          const [hue, sat, ...lightness] = colorData;
+          
+          // Draw many segments to simulate conic gradient
+          const segments = 360;
+          for (let i = 0; i < segments; i++) {
+            const startAngle = (i - 90 + angle) * Math.PI / 180;
+            const endAngle = (i + 1 - 90 + angle) * Math.PI / 180;
+            
+            // Calculate color for this segment based on angle
+            const segmentAngle = i;
+            let l;
+            if (segmentAngle < 5) l = lightness[0] + (lightness[1] - lightness[0]) * (segmentAngle / 5);
+            else if (segmentAngle < 15) l = lightness[1] + (lightness[2] - lightness[1]) * ((segmentAngle - 5) / 10);
+            else if (segmentAngle < 30) l = lightness[2] + (lightness[3] - lightness[2]) * ((segmentAngle - 15) / 15);
+            else if (segmentAngle < 60) l = lightness[3] + (lightness[4] - lightness[3]) * ((segmentAngle - 30) / 30);
+            else if (segmentAngle < 120) l = lightness[4] + (lightness[5] - lightness[4]) * ((segmentAngle - 60) / 60);
+            else if (segmentAngle < 240) l = lightness[5] + (lightness[4] - lightness[5]) * ((segmentAngle - 120) / 120);
+            else if (segmentAngle < 300) l = lightness[4] + (lightness[3] - lightness[4]) * ((segmentAngle - 240) / 60);
+            else if (segmentAngle < 345) l = lightness[3] + (lightness[2] - lightness[3]) * ((segmentAngle - 300) / 45);
+            else if (segmentAngle < 355) l = lightness[2] + (lightness[1] - lightness[2]) * ((segmentAngle - 345) / 10);
+            else l = lightness[1] + (lightness[0] - lightness[1]) * ((segmentAngle - 355) / 5);
+            
+            let s = sat;
+            if (segmentAngle >= 5 && segmentAngle < 15) s = sat + 3 + ((sat + 5) - (sat + 3)) * ((segmentAngle - 5) / 10);
+            else if (segmentAngle >= 15 && segmentAngle < 30) s = sat + 5 + (sat - (sat + 5)) * ((segmentAngle - 15) / 15);
+            else if (segmentAngle >= 30 && segmentAngle < 60) s = sat + (sat - 3 - sat) * ((segmentAngle - 30) / 30);
+            else if (segmentAngle >= 60 && segmentAngle < 120) s = sat - 3 + (sat - 5 - (sat - 3)) * ((segmentAngle - 60) / 60);
+            else if (segmentAngle >= 120 && segmentAngle < 240) s = sat - 5 + (sat - 3 - (sat - 5)) * ((segmentAngle - 120) / 120);
+            else if (segmentAngle >= 240 && segmentAngle < 300) s = sat - 3 + (sat - (sat - 3)) * ((segmentAngle - 240) / 60);
+            else if (segmentAngle >= 300 && segmentAngle < 345) s = sat + ((sat + 5) - sat) * ((segmentAngle - 300) / 45);
+            else if (segmentAngle >= 345 && segmentAngle < 355) s = sat + 5 + ((sat + 3) - (sat + 5)) * ((segmentAngle - 345) / 10);
+            else if (segmentAngle >= 355) s = sat + 3 + (sat - (sat + 3)) * ((segmentAngle - 355) / 5);
+            else if (segmentAngle < 5) s = sat + 3 * (segmentAngle / 5);
+            
+            ctx.fillStyle = `hsl(${hue}, ${s}%, ${l}%)`;
+            ctx.beginPath();
+            ctx.arc(center, center, outerRadius, startAngle, endAngle);
+            ctx.arc(center, center, innerRadius, endAngle, startAngle, true);
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
+        
+        // Draw the three rings (from outer to inner)
+        const secondsSize = size * 0.45;
+        const minutesSize = size * 0.45 * 0.833;
+        const hoursSize = size * 0.45 * 0.583;
+        
+        drawConicRing(secondsAngle, theme.seconds, secondsSize, minutesSize);
+        drawConicRing(minutesAngle, theme.minutes, minutesSize, hoursSize);
+        drawConicRing(hoursAngle, theme.hours, hoursSize, 0);
+        
+        // Draw markers if enabled
+        const textureType = textureSelect.value;
+        if (textureType !== 'none') {
+          const markerRadius = size * 0.467 * 0.45;
+          const positions = (textureType === 'cardinal') ? [0, 3, 6, 9] : Array.from({ length: 12 }, (_, i) => i);
+          
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.font = `${size * 0.04}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          positions.forEach(i => {
+            const angle = (i * 30) * Math.PI / 180;
+            const x = center + markerRadius * Math.sin(angle);
+            const y = center - markerRadius * Math.cos(angle);
+            
+            if (textureType === 'dots') {
+              ctx.beginPath();
+              ctx.arc(x, y, size * 0.013 / 2, 0, 2 * Math.PI);
+              ctx.fill();
+            } else {
+              let text = '';
+              if (textureType === 'roman') text = romanNumerals[i];
+              else if (textureType === 'numbers') text = i === 0 ? '12' : String(i);
+              else if (textureType === 'cardinal') text = i === 0 ? '12' : String(i);
+              
+              ctx.fillText(text, x, y);
+            }
+          });
+        }
+        
+        // Convert to PNG data URL
+        const dataUrl = clockCanvas.toDataURL('image/png');
+        
+        // Send to native via Capacitor plugin
+        if (window.Capacitor && window.Capacitor.Plugins.ClockSnapshot) {
+          await window.Capacitor.Plugins.ClockSnapshot.saveSnapshot({ dataUrl });
+          console.log('Clock snapshot saved for widget');
+        }
+      } catch (error) {
+        console.error('Failed to capture clock snapshot:', error);
+      }
+    }
+
+    // Trigger snapshot periodically
+    function checkSnapshotUpdate() {
+      const now = Date.now();
+      if (now - lastSnapshotTime > SNAPSHOT_INTERVAL) {
+        lastSnapshotTime = now;
+        captureClockSnapshot();
+      }
+    }
+
     // ====== Main clock update ======
     function updateClock() {
       // Sync with system time periodically
@@ -493,6 +633,7 @@
     function frame() {
       if (isVisible) {
         updateClock();
+        checkSnapshotUpdate();
       }
       animationFrameId = requestAnimationFrame(frame);
     }
@@ -529,6 +670,11 @@
     // Start the clock
     requestAnimationFrame(frame);
 
+    // Capture initial snapshot for widget after a short delay (let clock render first)
+    setTimeout(() => {
+      captureClockSnapshot();
+    }, 1000);
+
     // ====== UI events ======
     militaryBtn.addEventListener('click', () => {
       if (timeFormat === 'military') {
@@ -559,6 +705,8 @@
     textureSelect.addEventListener('change', () => {
       renderTexture(textureSelect.value);
       savePreferences();
+      lastSnapshotTime = 0; // Force immediate snapshot
+      captureClockSnapshot();
     });
 
     themeSelect.addEventListener('change', () => {
@@ -568,6 +716,8 @@
       lastHourPaint = 0;
       savePreferences();
       updateClock();
+      lastSnapshotTime = 0; // Force immediate snapshot
+      captureClockSnapshot();
     });
 
     // Reposition markers on resize (debounced)

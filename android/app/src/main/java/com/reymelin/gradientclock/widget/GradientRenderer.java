@@ -1,19 +1,53 @@
 package com.reymelin.gradientclock.widget;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Shader;
 
+import com.reymelin.gradientclock.ClockSnapshotPlugin;
+
+import java.io.File;
 import java.util.Calendar;
 
 public class GradientRenderer {
 
-  public static Bitmap renderGradientBitmap() {
-    int w = 600;
-    int h = 300;
+  /**
+   * Render bitmap for widget.
+   * Tries to load the clock snapshot from the web app first.
+   * Falls back to gradient if snapshot not available.
+   */
+  public static Bitmap renderWidgetBitmap(Context context, int width, int height) {
+    // Try to load the clock snapshot first
+    if (ClockSnapshotPlugin.snapshotExists(context)) {
+      String snapshotPath = ClockSnapshotPlugin.getSnapshotFilePath(context);
+      Bitmap snapshot = BitmapFactory.decodeFile(snapshotPath);
+      
+      if (snapshot != null) {
+        // Scale the snapshot to the desired widget size
+        Bitmap scaled = Bitmap.createScaledBitmap(snapshot, width, height, true);
+        if (scaled != snapshot) {
+          snapshot.recycle();
+        }
+        return scaled;
+      }
+    }
+    
+    // Fallback: render gradient if snapshot not available
+    return renderGradientBitmap(width, height);
+  }
 
+  /**
+   * Legacy gradient renderer (fallback)
+   */
+  public static Bitmap renderGradientBitmap() {
+    return renderGradientBitmap(600, 300);
+  }
+
+  private static Bitmap renderGradientBitmap(int w, int h) {
     int[] colors = colorsFromTime();
     int c1 = colors[0];
     int c2 = colors[1];
