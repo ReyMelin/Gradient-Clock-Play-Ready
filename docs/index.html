@@ -295,17 +295,33 @@
       THEME: 'gradientClock_theme'
     };
 
+    // Test localStorage availability
+    function isLocalStorageAvailable() {
+      try {
+        const test = '__localStorage_test__';
+        localStorage.setItem(test, test);
+        localStorage.removeItem(test);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
     function savePreferences() {
+      if (!isLocalStorageAvailable()) return;
+      
       try {
         localStorage.setItem(STORAGE_KEYS.TIME_FORMAT, timeFormat || 'none');
         localStorage.setItem(STORAGE_KEYS.TEXTURE, textureSelect.value);
         localStorage.setItem(STORAGE_KEYS.THEME, currentTheme);
       } catch (e) {
-        console.warn('Unable to save preferences:', e);
+        // Silent fail - preferences won't persist
       }
     }
 
     function loadPreferences() {
+      if (!isLocalStorageAvailable()) return;
+      
       try {
         // Load time format
         const savedTimeFormat = localStorage.getItem(STORAGE_KEYS.TIME_FORMAT);
@@ -330,9 +346,11 @@
         if (savedTheme && themes[savedTheme]) {
           currentTheme = savedTheme;
           themeSelect.value = savedTheme;
+          lastMinutePaint = 0;
+          lastHourPaint = 0;
         }
       } catch (e) {
-        console.warn('Unable to load preferences:', e);
+        // Silent fail - use defaults
       }
     }
 

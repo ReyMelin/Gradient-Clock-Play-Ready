@@ -90,29 +90,57 @@
 <body>
     <div class="container">
         <h1>Privacy Policy</h1>
-        <p class="last-updated">Last updated: January 1, 2026</p>
+        <p class="last-updated">Last updated: January 6, 2026</p>
 
         <h2>Overview</h2>
-        <p>Gradient Clock is a simple, client-side web application that displays the current time through colorful, animated rings. This privacy policy explains how we handle your information.</p>
+        <p>Gradient Clock is a privacy-first clock application that displays the current time through colorful, animated rings in the app and as a home screen widget. Your privacy is our top priority.</p>
 
-        <h2>Data Collection</h2>
-        <p>Gradient Clock does not collect, store, or transmit any personal information. The application:</p>
+        <h2>No Data Collection</h2>
+        <p><strong>Gradient Clock does not collect, store, or transmit any personal information.</strong> The application:</p>
         <ul>
-            <li>Runs entirely in your web browser</li>
+            <li>Does not collect any user data whatsoever</li>
             <li>Does not use cookies</li>
             <li>Does not track your activity</li>
-            <li>Does not collect any personal data</li>
+            <li>Does not access your location</li>
             <li>Does not require user registration or login</li>
+            <li>Does not make any network requests</li>
+            <li>Works completely offline</li>
         </ul>
 
-        <h2>Local Storage</h2>
-        <p>The application does not use browser local storage or any other form of persistent storage. Your theme and display preferences are not saved between sessions.</p>
+        <h2>Local Storage (Device Only)</h2>
+        <p>The app stores your display preferences <strong>locally on your device only</strong> to remember your settings between sessions:</p>
+        <ul>
+            <li>Time format preference (24-hour or AM/PM)</li>
+            <li>Theme selection (metallic, winter, etc.)</li>
+            <li>Clock marker style (roman numerals, dots, etc.)</li>
+        </ul>
+        <p><strong>This data never leaves your device</strong> and is never transmitted to any server or third party. You can clear these preferences at any time through your device's app settings.</p>
 
         <h2>Third-Party Services</h2>
-        <p>Gradient Clock does not integrate with any third-party services, analytics platforms, or advertising networks.</p>
+        <p>Gradient Clock does not integrate with any third-party services, analytics platforms, advertising networks, or tracking tools of any kind.</p>
 
-        <h2>System Time Access</h2>
-        <p>The application accesses your device's system time solely to display the clock. This information never leaves your device and is not stored or transmitted in any way.</p>
+        <h2>Time and Timezone</h2>
+        <p>The application accesses your device's system time solely to display the clock. Your device's timezone setting is used automatically to show your local time. This information never leaves your device and is not stored or transmitted in any way.</p>
+
+        <h2>Home Screen Widget</h2>
+        <p>The app includes an optional home screen widget that displays the current time with a gradient background. The widget:</p>
+        <ul>
+            <li>Updates periodically using Android's WorkManager (system service, not a third-party)</li>
+            <li>Uses your device's local time and timezone settings</li>
+            <li>Generates gradient colors based on the time of day</li>
+            <li>Does not collect, store, or transmit any data</li>
+            <li>Works completely offline</li>
+        </ul>
+
+        <h2>Permissions</h2>
+        <p>The Android app requests minimal permissions:</p>
+        <ul>
+            <li><strong>Keep screen awake (WAKE_LOCK):</strong> Prevents your screen from dimming while viewing the clock in the app</li>
+        </ul>
+        <p>No other permissions are requested or used. Location services are explicitly disabled. The widget does not require any special permissions.</p>
+
+        <h2>Background Processing</h2>
+        <p>If you add the widget to your home screen, the app uses Android's WorkManager to schedule periodic updates (approximately every 15 minutes) to keep the widget display current. This is a standard Android system service and does not collect or transmit any data.</p>
 
         <h2>Changes to This Policy</h2>
         <p>If we make changes to this privacy policy, we will update the "Last updated" date at the top of this page.</p>
