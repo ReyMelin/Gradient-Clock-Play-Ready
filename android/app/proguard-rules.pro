@@ -16,7 +16,7 @@
 
 # Keep our main activities and services
 -keep class com.reymelin.gradientclock.MainActivity { *; }
--keep class com.reymelin.gradientclock.GradientClockWidget { *; }
+-keep class com.reymelin.gradientclock.widget.GradientClockWidgetProvider { *; }
 -keep class com.reymelin.gradientclock.GradientClockWallpaperService { *; }
 -keep class com.reymelin.gradientclock.WidgetConfigActivity { *; }
 -keep class com.reymelin.gradientclock.WallpaperSettingsActivity { *; }
