@@ -1,6 +1,5 @@
 package com.reymelin.gradientclock;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
@@ -13,7 +12,6 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 
 @CapacitorPlugin(name = "ClockSnapshot")
 public class ClockSnapshotPlugin extends Plugin {
@@ -65,15 +63,5 @@ public class ClockSnapshotPlugin extends Plugin {
     result.put("path", file.getAbsolutePath());
     result.put("exists", file.exists());
     call.resolve(result);
-  }
-
-  public static String getSnapshotFilePath(Context context) {
-    File file = new File(context.getFilesDir(), SNAPSHOT_FILENAME);
-    return file.getAbsolutePath();
-  }
-
-  public static boolean snapshotExists(Context context) {
-    File file = new File(context.getFilesDir(), SNAPSHOT_FILENAME);
-    return file.exists();
   }
 }

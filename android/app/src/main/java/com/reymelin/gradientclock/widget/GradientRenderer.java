@@ -8,12 +8,12 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Shader;
 
-import com.reymelin.gradientclock.ClockSnapshotPlugin;
-
 import java.io.File;
 import java.util.Calendar;
 
 public class GradientRenderer {
+
+  private static final String SNAPSHOT_FILENAME = "clock_snapshot.png";
 
   /**
    * Render bitmap for widget.
@@ -22,9 +22,14 @@ public class GradientRenderer {
    */
   public static Bitmap renderWidgetBitmap(Context context, int width, int height) {
     // Try to load the clock snapshot first
-    if (ClockSnapshotPlugin.snapshotExists(context)) {
-      String snapshotPath = ClockSnapshotPlugin.getSnapshotFilePath(context);
-      Bitmap snapshot = BitmapFactory.decodeFile(snapshotPath);
+    File snapshotFile = new File(context.getFilesDir(), SNAPSHOT_FILENAME);
+    
+    android.util.Log.d("Widget", "Looking for snapshot: " + snapshotFile.getAbsolutePath()
+      + " exists=" + snapshotFile.exists()
+      + " size=" + snapshotFile.length());
+    
+    if (snapshotFile.exists()) {
+      Bitmap snapshot = BitmapFactory.decodeFile(snapshotFile.getAbsolutePath());
       
       if (snapshot != null) {
         // Scale the snapshot to the desired widget size
