@@ -435,9 +435,13 @@
         const ctx = clockCanvas.getContext('2d');
         ctx.clearRect(0, 0, size, size);
         
-        // Draw background
+        // Draw circular background only (not full rectangle)
+        const center = size / 2;
+        const radius = size / 2;
+        ctx.beginPath();
+        ctx.arc(center, center, radius, 0, Math.PI * 2);
         ctx.fillStyle = '#0a0a0a';
-        ctx.fillRect(0, 0, size, size);
+        ctx.fill();
         
         const center = size / 2;
         const now = getCurrentTime();
@@ -537,6 +541,15 @@
             }
           });
         }
+        
+        // Clip everything outside the circle to transparent
+        ctx.save();
+        ctx.globalCompositeOperation = "destination-in";
+        ctx.beginPath();
+        ctx.arc(center, center, radius, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
         
         // Convert to PNG data URL
         const dataUrl = clockCanvas.toDataURL('image/png');
