@@ -67,29 +67,34 @@ public class GradientRenderer {
     return renderGradientBitmap(600, 300);
   }
 
-  private static Bitmap renderGradientBitmap(int w, int h) {
-    int[] colors = colorsFromTime();
-    int c1 = colors[0];
-    int c2 = colors[1];
+    private static Bitmap renderGradientBitmap(int w, int h) {
+        int[] colors = colorsFromTime();
+        int c1 = colors[0];
+        int c2 = colors[1];
 
-    int size = Math.min(w, h);
+        int size = Math.min(w, h);
 
-    Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-    Canvas canvas = new Canvas(bmp);
-    canvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
 
-    Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    LinearGradient shader = new LinearGradient(
-      0f, 0f, 0f, (float) size,
-      c1, c2,
-      Shader.TileMode.CLAMP
-    );
-    paint.setShader(shader);
-    float r = size / 2f;
-    canvas.drawCircle(r, r, r, paint);
+        // Clear to transparent
+        canvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
-    return bmp;
-  }
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        LinearGradient shader = new LinearGradient(
+                0f, 0f, 0f, (float) size,
+                c1, c2,
+                Shader.TileMode.CLAMP
+        );
+        paint.setShader(shader);
+
+        // 🔑 Draw a CIRCLE instead of a square
+        float r = size / 2f;
+        canvas.drawCircle(r, r, r, paint);
+
+        return bmp;
+    }
+
 
   private static int[] colorsFromTime() {
     Calendar cal = Calendar.getInstance();
