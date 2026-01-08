@@ -39,4 +39,5 @@
     <!-- Actions -->
     <string name="confirm">Confirm</string>
     <string name="save">Save</string>
+    <string name="_12_34">12:34</string>
 </resources>
