@@ -4,10 +4,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+
 import com.getcapacitor.BridgeActivity;
 
 /**
@@ -21,16 +22,13 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(ClockSnapshotPlugin.class);
         super.onCreate(savedInstanceState);
-        
+
         Log.d(TAG, "MainActivity onCreate");
-        
-        // Enable immersive fullscreen mode
+
         enableImmersiveMode();
-        
-        // Keep screen on (optional, can be controlled by user preference)
+
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        
-        // Allow brightness control
+
         WindowManager.LayoutParams params = getWindow().getAttributes();
         params.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
         getWindow().setAttributes(params);

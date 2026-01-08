@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.Shader;
 
 import java.io.File;
@@ -21,31 +22,45 @@ public class GradientRenderer {
    * Falls back to gradient if snapshot not available.
    */
   public static Bitmap renderWidgetBitmap(Context context, int width, int height) {
-    // Try to load the clock snapshot first
-    File snapshotFile = new File(context.getFilesDir(), SNAPSHOT_FILENAME);
-    
-    android.util.Log.d("Widget", "Looking for snapshot: " + snapshotFile.getAbsolutePath()
-      + " exists=" + snapshotFile.exists()
-      + " size=" + snapshotFile.length());
-    
-    if (snapshotFile.exists()) {
-      Bitmap snapshot = BitmapFactory.decodeFile(snapshotFile.getAbsolutePath());
-      
-      if (snapshot != null) {
-        // Scale the snapshot to the desired widget size
-        Bitmap scaled = Bitmap.createScaledBitmap(snapshot, width, height, true);
-        if (scaled != snapshot) {
-          snapshot.recycle();
-        }
-        return scaled;
+      File snapshotFile = new File(context.getFilesDir(), SNAPSHOT_FILENAME);
+
+      android.util.Log.d("Widget", "Looking for snapshot: " + snapshotFile.getAbsolutePath()
+              + " exists=" + snapshotFile.exists()
+              + " size=" + snapshotFile.length());
+
+      if (snapshotFile.exists()) {
+          Bitmap snapshot = BitmapFactory.decodeFile(snapshotFile.getAbsolutePath());
+
+          if (snapshot == null) {
+              android.util.Log.e("Widget", "Snapshot exists but decodeFile returned null (invalid/empty PNG?)");
+          } else {
+              int size = Math.min(width, height);
+
+              // add internal padding so the circle doesn't touch edges
+              int padded = (int)(size * 0.92f); // 8% padding
+              Bitmap scaled = Bitmap.createScaledBitmap(snapshot, padded, padded, true);
+
+              // put scaled bitmap onto a transparent square canvas (size x size)
+              Bitmap out = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+              Canvas c = new Canvas(out);
+              c.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+              int left = (size - padded) / 2;
+              int top = (size - padded) / 2;
+              c.drawBitmap(scaled, left, top, null);
+
+              if (scaled != snapshot) scaled.recycle();
+              snapshot.recycle();
+
+              return out;
+          }
       }
-    }
-    
-    // Fallback: render gradient if snapshot not available
-    return renderGradientBitmap(width, height);
+
+      android.util.Log.d("Widget", "Using fallback gradient.");
+      return renderGradientBitmap(width, height);
   }
 
-  /**
+
+    /**
    * Legacy gradient renderer (fallback)
    */
   public static Bitmap renderGradientBitmap() {
@@ -57,17 +72,21 @@ public class GradientRenderer {
     int c1 = colors[0];
     int c2 = colors[1];
 
-    Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+    int size = Math.min(w, h);
+
+    Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
     Canvas canvas = new Canvas(bmp);
+    canvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
     Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     LinearGradient shader = new LinearGradient(
-      0f, 0f, 0f, (float) h,
+      0f, 0f, 0f, (float) size,
       c1, c2,
       Shader.TileMode.CLAMP
     );
     paint.setShader(shader);
-    canvas.drawRect(0f, 0f, (float) w, (float) h, paint);
+    float r = size / 2f;
+    canvas.drawCircle(r, r, r, paint);
 
     return bmp;
   }
