@@ -435,18 +435,27 @@
         // Create context with alpha channel enabled
         const ctx = clockCanvas.getContext('2d', { alpha: true });
         
-        // Clear to transparent first
+        // 1) Force a fully transparent canvas
         ctx.save();
         ctx.globalCompositeOperation = "source-over";
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, size, size);
         ctx.restore();
         
-        // Draw circular background INSIDE the circle
+        // 2) Clip to circle (nothing outside can be painted)
         const center = size / 2;
         const radius = size / 2;
+        
+        ctx.save();
         ctx.beginPath();
         ctx.arc(center, center, radius, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        
+        // 3) Draw circular background INSIDE the circle only
         ctx.fillStyle = '#0a0a0a';
+        ctx.beginPath();
+        ctx.arc(center, center, radius, 0, Math.PI * 2);
         ctx.fill();
         
         const now = getCurrentTime();
@@ -547,14 +556,11 @@
           });
         }
         
-        // FINAL: punch out everything outside the circle (destination-in mask)
-        ctx.save();
-        ctx.globalCompositeOperation = "destination-in";
-        ctx.beginPath();
-        ctx.arc(center, center, radius, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+        ctx.restore(); // Restore from the clip
+        
+        // Debug: confirm transparency in the corner pixel
+        const cornerAlpha = ctx.getImageData(0, 0, 1, 1).data[3];
+        console.log('Corner alpha should be 0:', cornerAlpha);
         
         // Export to PNG data URL
         const dataUrl = clockCanvas.toDataURL('image/png');
