@@ -556,52 +556,55 @@
           });
         }
         
-        ctx.restore(); // Restore from the clip
-        
-        // ---- HARD FINAL MASK (must be the LAST drawing op) ----
-        const cx = size / 2;
-        const cy = size / 2;
-        const r  = size / 2;
+    ctx.restore(); // Restore from the clip
+    
+    // ---- HARD FINAL MASK (must be the LAST drawing op) ----
+    const cx = size / 2;
+    const cy = size / 2;
+    const r  = size / 2;
 
-        // Keep only the circle using destination-in composite operation
-        ctx.save();
-        ctx.globalCompositeOperation = "destination-in";
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-        
-        // ---- PROVE TRANSPARENCY: corner alpha should be 0 ----
-        const cornerAlpha = ctx.getImageData(0, 0, 1, 1).data[3];
-        console.log('SNAPSHOT corner alpha (expect 0):', cornerAlpha);
-        
-        // Debug: verify we're exporting the correct canvas
-        console.log('Exporting canvas id:', clockCanvas.id || 'clockCanvas', 'size:', clockCanvas.width, clockCanvas.height);
-        
-        // Export to PNG data URL
-        const dataUrl = clockCanvas.toDataURL('image/png');
-        
-        // Send to native via Capacitor plugin
-        if (window.Capacitor && window.Capacitor.Plugins.ClockSnapshot) {
-          await window.Capacitor.Plugins.ClockSnapshot.saveSnapshot({ dataUrl });
-          console.log('Clock snapshot saved for widget');
-        }
-      } catch (error) {
-        console.error('Failed to capture clock snapshot:', error);
-      }
+    // Keep only the circle using destination-in composite operation
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-in";
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    // ---- PROVE TRANSPARENCY: corner alpha should be 0 ----
+    const cornerAlpha = ctx.getImageData(0, 0, 1, 1).data[3];
+    console.log("SNAPSHOT corner alpha (expect 0):", cornerAlpha);
+
+    // ✅ Export the SAME canvas that ctx is drawing to
+    const exportCanvas = ctx.canvas;
+    console.log("Exporting snapshot canvas id:", exportCanvas.id || "(no id)",
+                "size:", exportCanvas.width, exportCanvas.height);
+
+    // Export to PNG data URL (this will now include transparency)
+    const dataUrl = exportCanvas.toDataURL("image/png");
+
+    // Send to native via Capacitor plugin
+    if (window.Capacitor?.Plugins?.ClockSnapshot) {
+      await window.Capacitor.Plugins.ClockSnapshot.saveSnapshot({ dataUrl });
+      console.log("Clock snapshot saved for widget");
+    } else {
+      console.warn("ClockSnapshot plugin not available");
     }
+  } catch (e) {
+    console.error("Error capturing clock snapshot:", e);
+  }
+}
 
-    // Trigger snapshot periodically
-    function checkSnapshotUpdate() {
-      const now = Date.now();
-      if (now - lastSnapshotTime > SNAPSHOT_INTERVAL) {
-        lastSnapshotTime = now;
-        captureClockSnapshot();
-      }
-    }
+function checkSnapshotUpdate() {
+  const now = Date.now();
+  if (now - lastSnapshotTime > SNAPSHOT_INTERVAL) {
+    lastSnapshotTime = now;
+    captureClockSnapshot();
+  }
+}
 
-    // ====== Main clock update ======
+// ====== Main clock update ======
     function updateClock() {
       // Sync with system time periodically
       syncClock();
