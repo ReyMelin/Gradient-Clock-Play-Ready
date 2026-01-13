@@ -1,6 +1,6 @@
 {
   "appId": "com.reymelin.gradientclock",
-  "appName": "Gradient Clock",
+  "appName": "Gradient Clock Watch Ready",
   "webDir": "docs",
   "server": { "androidScheme": "https" }
 }

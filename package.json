@@ -1,7 +1,7 @@
 {
-  "name": "gradient-clock-shell",
+  "name": "gradient-clock-watch-ready",
   "version": "1.0.0",
-  "description": "",
+  "description": "Gradient Clock Watch Ready - An animated gradient clock application",
   "main": "index.js",
  "scripts": {
   "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,16 +10,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ReyMelin/Gradient-Clock-Shell.git"
+    "url": "git+https://github.com/ReyMelin/Gradient-Clock-Watch-Ready.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/ReyMelin/Gradient-Clock-Shell/issues"
+    "url": "https://github.com/ReyMelin/Gradient-Clock-Watch-Ready/issues"
   },
-  "homepage": "https://github.com/ReyMelin/Gradient-Clock-Shell#readme",
+  "homepage": "https://github.com/ReyMelin/Gradient-Clock-Watch-Ready#readme",
   "dependencies": {
     "@capacitor/android": "^8.0.0",
     "@capacitor/cli": "^8.0.0",
