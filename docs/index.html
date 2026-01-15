@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Gradient Clock</title>
   <style>
     :root {
@@ -59,7 +59,7 @@
 
     .button-container {
       position: absolute;
-      top: 20px;
+      top: calc(30px + env(safe-area-inset-top));
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
@@ -137,7 +137,7 @@
 
     .info {
       position: absolute;
-      bottom: 20px;
+      bottom: calc(30px + env(safe-area-inset-bottom));
       text-align: center;
       color: rgba(255, 255, 255, 0.3);
       font-size: 14px;
@@ -147,23 +147,23 @@
 
     @media (max-width: 768px) {
       :root { --clock-size: min(85vw, 85vh, 500px); }
-      .button-container { top: 10px; gap: 8px; }
+      .button-container { top: calc(20px + env(safe-area-inset-top)); gap: 8px; }
       .time-button, .texture-select { padding: 10px 18px; font-size: 13px; }
-      .info { font-size: 12px; bottom: 10px; }
+      .info { font-size: 12px; bottom: calc(20px + env(safe-area-inset-bottom)); }
     }
 
     @media (max-width: 480px) {
       :root { --clock-size: min(80vw, 80vh, 400px); }
-      .button-container { top: 5px; gap: 6px; }
+      .button-container { top: calc(15px + env(safe-area-inset-top)); gap: 6px; }
       .time-button, .texture-select { padding: 8px 12px; font-size: 11px; }
-      .info { font-size: 10px; bottom: 5px; }
+      .info { font-size: 10px; bottom: calc(15px + env(safe-area-inset-bottom)); }
     }
 
     @media (max-height: 600px) and (orientation: landscape) {
       :root { --clock-size: min(70vh, 400px); }
-      .button-container { top: 5px; gap: 5px; }
+      .button-container { top: calc(15px + env(safe-area-inset-top)); gap: 5px; }
       .time-button, .texture-select { padding: 6px 10px; font-size: 10px; }
-      .info { font-size: 9px; bottom: 5px; }
+      .info { font-size: 9px; bottom: calc(15px + env(safe-area-inset-bottom)); }
     }
   </style>
 </head>
@@ -425,6 +425,7 @@
     // ====== Clock Snapshot for Widget ======
     let lastSnapshotTime = 0;
     const SNAPSHOT_INTERVAL = 60000; // Update snapshot every minute
+    let snapshotPluginWarningShown = false;
 
     async function captureClockSnapshot() {
       try {
@@ -432,8 +433,8 @@
         clockCanvas.width = size;
         clockCanvas.height = size;
         
-        // Create context with alpha channel enabled
-        const ctx = clockCanvas.getContext('2d', { alpha: true });
+        // Create context with alpha channel enabled and willReadFrequently for getImageData performance
+        const ctx = clockCanvas.getContext('2d', { alpha: true, willReadFrequently: true });
         
         // 1) Force a fully transparent canvas
         ctx.save();
@@ -588,8 +589,9 @@
     if (window.Capacitor?.Plugins?.ClockSnapshot) {
       await window.Capacitor.Plugins.ClockSnapshot.saveSnapshot({ dataUrl });
       console.log("Clock snapshot saved for widget");
-    } else {
-      console.warn("ClockSnapshot plugin not available");
+    } else if (!snapshotPluginWarningShown) {
+      console.log("ClockSnapshot plugin not available (running in browser mode)");
+      snapshotPluginWarningShown = true;
     }
   } catch (e) {
     console.error("Error capturing clock snapshot:", e);
