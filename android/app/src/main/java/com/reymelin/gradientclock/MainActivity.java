@@ -9,6 +9,11 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 import com.getcapacitor.BridgeActivity;
 
 /**
@@ -25,7 +30,11 @@ public class MainActivity extends BridgeActivity {
 
         Log.d(TAG, "MainActivity onCreate");
 
+        // Enable edge-to-edge display for Android 15+ compatibility
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        
         enableImmersiveMode();
+        setupWindowInsets();
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -57,17 +66,39 @@ public class MainActivity extends BridgeActivity {
 
     /**
      * Enable immersive fullscreen mode for distraction-free clock display
+     * Uses modern WindowInsetsController API for Android 15+ compatibility
      */
     private void enableImmersiveMode() {
-        View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(
-            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_FULLSCREEN
-        );
+        // Use the modern WindowInsetsController API
+        WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+            .hide(WindowInsetsCompat.Type.systemBars());
+        
+        // Set behavior for immersive sticky mode
+        WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+            .setSystemBarsBehavior(
+                androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            );
+    }
+
+    /**
+     * Setup window insets handling for edge-to-edge display
+     * Ensures content is properly displayed on Android 15+
+     */
+    private void setupWindowInsets() {
+        View rootView = findViewById(android.R.id.content);
+        if (rootView != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, windowInsets) -> {
+                Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+                
+                // For a fullscreen clock, we want to draw behind system bars
+                // but we log the insets in case we need to handle them differently
+                Log.d(TAG, "Window insets - top: " + insets.top + ", bottom: " + insets.bottom + 
+                          ", left: " + insets.left + ", right: " + insets.right);
+                
+                // Return the insets unchanged to allow drawing behind system bars
+                return windowInsets;
+            });
+        }
     }
 
     /**
@@ -105,11 +136,8 @@ public class MainActivity extends BridgeActivity {
             
             // Enable database storage for localStorage persistence
             settings.setDatabaseEnabled(true);
-            
-            // Set database path for persistent storage
-            String databasePath = getApplicationContext().getDir("databases", MODE_PRIVATE).getPath();
-            settings.setDatabasePath(databasePath);
-            Log.d(TAG, "Database path set to: " + databasePath);
+            // Note: setDatabasePath() is deprecated since API 26 and not needed
+            // The system handles database paths automatically
 
             // Enable console logging for debugging
             bridge.setWebChromeClient(new WebChromeClient() {
